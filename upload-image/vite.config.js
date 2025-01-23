@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3000', // Dirección del servidor backend
+        target: 'http://web-service-env.eba-mjeeiw4v.us-east-1.elasticbeanstalk.com/3000', // Dirección del servidor backend
         changeOrigin: true,
         secure: false,
       },

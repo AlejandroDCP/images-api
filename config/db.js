@@ -1,20 +1,33 @@
 const { Sequelize } = require('sequelize');
+const AWS = require('aws-sdk');
 
-// Crear una instancia de Sequelize
-const sequelize = new Sequelize(
-  process.env.DB_NAME,        // Nombre de la base de datos
-  process.env.DB_USER,        // Usuario de la base de datos
-  process.env.DB_PASSWORD,    // Contraseña de la base de datos
-  {
-    host: process.env.DB_HOST, // Dirección del host remoto
-    dialect: 'mysql',          // Tipo de base de datos (MySQL)
-    port: process.env.DB_PORT, // Puerto (3306 por defecto)
+const secretsManager = new AWS.SecretsManager();
+
+const getDatabaseCredentials = async () => {
+  const secretName = process.env.SECRET_ARN;
+  
+  try {
+    const data = await secretsManager.getSecretValue({ SecretId: secretName }).promise();
+    return JSON.parse(data.SecretString);
+  
+  } catch (error) {
+    throw new Error('No se pudieron obtener las credenciales de la base de datos.');
   }
-);
+  
+};
 
-// Verificar la conexión
-sequelize.authenticate()
-  .then(() => console.log('Conexión exitosa a la base de datos'))
-  .catch((error) => console.error('No se pudo conectar a la base de datos:', error));
+const createSequelizeInstance = async () => {
+  try {
+    const { username, password, host, port, dbname } = await getDatabaseCredentials();
+    return new Sequelize(dbname, username, password, {
+      host,
+      dialect: 'mysql',
+      port,
+    });
+  } catch (error) {
+    console.error('Error al crear la instancia de Sequelize:', error.message);
+    throw error;
+  }
+};
 
-module.exports = sequelize;
+module.exports = createSequelizeInstance();
