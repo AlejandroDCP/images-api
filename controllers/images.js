@@ -29,16 +29,16 @@ const uploadFile = async (req, res) => {
         await s3.putObject(params).promise();
         const fileUrl = `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName.split(' ').join('-')}`;
 
-        // const Images = await ImagesPromise;
+        const Images = await ImagesPromise;
 
-        // const newImage = await Images.create({
-        //     image: fileUrl, // URL de la imagen o el path
-        //  });
+        const newImage = await Images.create({
+            image: fileUrl, // URL de la imagen o el path
+         });
 
         res.status(200).json({
             message: 'Archivo subido con éxito',
             fileUrl,
-        //    image: newImage,
+           image: newImage,
         });
     } catch (error) {
         console.error('Error al subir archivo:', error);
